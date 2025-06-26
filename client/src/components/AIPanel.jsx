@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
 
 const AIPanel = ({ isOpen, onToggle, onApplyContent }) => {
   const [messages, setMessages] = useState([
@@ -130,7 +131,7 @@ const AIPanel = ({ isOpen, onToggle, onApplyContent }) => {
                   : 'bg-white text-gray-800 border border-gray-200'
               }`}
             >
-              {message.content}
+              <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           </div>
         ))}

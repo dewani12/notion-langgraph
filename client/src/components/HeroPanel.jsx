@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
 
 const HeroPanel = ({ selectedPage, onUpdatePage }) => {
   const [localTitle, setLocalTitle] = useState('')
   const [localContent, setLocalContent] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
     if (selectedPage) {
@@ -13,20 +15,6 @@ const HeroPanel = ({ selectedPage, onUpdatePage }) => {
       setLocalContent('')
     }
   }, [selectedPage])
-
-  if (!selectedPage) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-white">
-        <div className="text-center">
-          <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <h2 className="text-xl font-medium text-gray-600 mb-2">Select a page to start writing</h2>
-          <p className="text-gray-500">Choose a page from the sidebar or create a new one</p>
-        </div>
-      </div>
-    )
-  }
 
   const handleTitleChange = (e) => setLocalTitle(e.target.value)
   const handleContentChange = (e) => setLocalContent(e.target.value)
@@ -41,6 +29,21 @@ const HeroPanel = ({ selectedPage, onUpdatePage }) => {
     if (selectedPage.content !== localContent) {
       onUpdatePage(selectedPage.id, { content: localContent })
     }
+    setIsEditing(false)
+  }
+
+  if (!selectedPage) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-white">
+        <div className="text-center">
+          <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h2 className="text-xl font-medium text-gray-600 mb-2">Select a page to start writing</h2>
+          <p className="text-gray-500">Choose a page from the sidebar or create a new one</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -58,14 +61,26 @@ const HeroPanel = ({ selectedPage, onUpdatePage }) => {
       </div>
 
       {/* Page Content */}
-      <div className="flex-1 p-6">
-        <textarea
-          value={localContent}
-          onChange={handleContentChange}
-          onBlur={handleContentBlur}
-          className="w-full h-full resize-none bg-transparent border-none outline-none focus:ring-0 text-gray-700 text-lg leading-relaxed"
-          placeholder="Start writing your content here..."
-        />
+      <div className="flex-1 p-6 overflow-y-auto">
+        <div
+          className="w-full h-full text-gray-700 text-lg leading-relaxed"
+          onClick={() => setIsEditing(true)}
+        >
+          {isEditing ? (
+            <textarea
+              value={localContent}
+              onChange={handleContentChange}
+              onBlur={handleContentBlur}
+              autoFocus
+              className="w-full h-full resize-none bg-transparent border-none outline-none focus:ring-0"
+              placeholder="Start writing your content here..."
+            />
+          ) : (
+            <ReactMarkdown>
+              {localContent || '_Start writing your content here..._'}
+            </ReactMarkdown>
+          )}
+        </div>
       </div>
     </div>
   )

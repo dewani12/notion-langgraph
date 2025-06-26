@@ -17,13 +17,25 @@ load_dotenv()
 # Initialize memory saver for checkpointing
 memory = MemorySaver()
 
+class State(TypedDict):
+    messages: Annotated[list, add_messages]
+
+search_tool = TavilySearch(
+    max_results=4,
+)
+
+tools = [search_tool]
+
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+
+llm_with_tools = llm.bind_tools(tools=tools)
+
 SYSTEM_MESSAGE = SystemMessage(content="""
 You are an AI content generator inside a Notion-like platform. Your task is to generate structured, long-form content (~1000 words) using real-time search tools to fetch real-world examples and insights. Follow this format:
 
 1. Use the search tool when needed to support facts and case studies.
 2. Write in a clean, minimal, Notion-style tone—clear, practical, and slightly inspirational.
 3. Include emotional hooks and frameworks that make the content viral and shareable.
-4. Conclude with relevant tags like #virality, #aigenerated, #realexamples.
 
 Use the following structure:
 ---
@@ -43,23 +55,7 @@ Use the following structure:
 
 ### 🎯 Final Thought
 ---
-
-### 🏷️ Tags:
-#virality #contentgen #searchpowered #aigrowth
 """)
-
-class State(TypedDict):
-    messages: Annotated[list, add_messages]
-
-search_tool = TavilySearch(
-    max_results=4,
-)
-
-tools = [search_tool]
-
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
-
-llm_with_tools = llm.bind_tools(tools=tools)
 
 async def model(state: State):
     result = await llm_with_tools.ainvoke(state["messages"])
@@ -126,7 +122,7 @@ async def generate_chat_responses(message: str, checkpoint_id: Optional[str] = N
         
         # Initialize with first message
         events = graph.astream_events(
-            {"messages": [SYSTEM_MESSAGE, HumanMessage(content=message)]},
+            {"messages": [SYSTEM_MESSAGE,HumanMessage(content=message)]},
             version="v2",
             config=config
         )
@@ -141,7 +137,7 @@ async def generate_chat_responses(message: str, checkpoint_id: Optional[str] = N
         }
         # Continue existing conversation
         events = graph.astream_events(
-            {"messages": [SYSTEM_MESSAGE, HumanMessage(content=message)]},
+            {"messages": [SYSTEM_MESSAGE,HumanMessage(content=message)]},
             version="v2",
             config=config
         )
